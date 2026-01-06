@@ -38,7 +38,15 @@ Fork this repository and:
 
 * Create a release by pushing a tag
 * Wait until actions finish
-* Use `opkg -i *` to install both ipks from Releases.
+* Download the generated `*.ipk` files from GitHub Releases and install them.
+
+Notes:
+
+* The default workflow matrix only builds `x86_64`.
+* To build for other targets, use the `Actions -> Build and Release -> Run workflow` form and provide:
+    * `sdk_url_path`: the OpenWrt SDK download URL for your `target/subtarget`
+    * `sdk_name`: a pattern like `-sdk-23.05.5-aarch64_cortex-a53_neon-vfpv4_`
+  The generated `*.ipk` files will be available as workflow artifacts for that run.
 
 ## Enable preview app
 
