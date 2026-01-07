@@ -48,7 +48,7 @@ jobs:
 
       - name: Prepare Cache Key
         id: cache_key
-        run: echo "::set-output name=timestamp::$(date +"%s")"
+        run: echo "timestamp=$(date +%s)" >> "$GITHUB_OUTPUT"
 
       - name: Setup Cache
         uses: actions/cache@v4
@@ -173,7 +173,7 @@ jobs:
 
       - name: Prepare Cache Key
         id: cache_key
-        run: echo "::set-output name=timestamp::$(date +"%s")"
+        run: echo "timestamp=$(date +%s)" >> "$GITHUB_OUTPUT"
 
       - name: Setup Cache
         uses: actions/cache@v4
@@ -270,17 +270,21 @@ jobs:
           cd -
       - name: Copy Bin Files
         run: |
+          mkdir -p "${{ github.workspace }}/ipk"
           find "$SDK_HOME/bin/" -type f \( \
             -name "luci-app-xray*.ipk" -o \
             -name "luci-app-xray-geodata*.ipk" -o \
             -name "luci-app-xray-status*.ipk" \
-          \) -exec cp {} "${{ github.workspace }}" \;
-          find "${{ github.workspace }}" -type f -name "*.ipk" -exec ls -lh {} \;
+          \) -exec cp {} "${{ github.workspace }}/ipk" \;
+          echo "IPKs in SDK output:"
+          find "$SDK_HOME/bin/" -type f -name "*.ipk" -exec ls -lh {} \;
+          echo "IPKs to upload:"
+          find "${{ github.workspace }}/ipk" -type f -name "*.ipk" -exec ls -lh {} \;
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PACKAGE_NAME }}-${{ inputs.arch_label }}-ipk
-          path: "*.ipk"
+          path: "ipk/*.ipk"
 
   notify:
     name: Notify Release Publish
