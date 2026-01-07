@@ -132,6 +132,11 @@ jobs:
       - name: Build Packages
         run: |
           cd "$SDK_HOME"
+          cat >> .config <<'EOF'
+          CONFIG_PACKAGE_luci-app-xray=m
+          CONFIG_PACKAGE_luci-app-xray-geodata=m
+          CONFIG_PACKAGE_luci-app-xray-status=m
+          EOF
           make defconfig
           make package/luci-app-xray/{clean,compile} V=s
           make package/luci-app-xray-geodata/{clean,compile} V=s
@@ -252,6 +257,11 @@ jobs:
       - name: Build Packages
         run: |
           cd "$SDK_HOME"
+          cat >> .config <<'EOF'
+          CONFIG_PACKAGE_luci-app-xray=m
+          CONFIG_PACKAGE_luci-app-xray-geodata=m
+          CONFIG_PACKAGE_luci-app-xray-status=m
+          EOF
           make defconfig
           make package/luci-app-xray/{clean,compile} V=s
           make package/luci-app-xray-geodata/{clean,compile} V=s
