@@ -80,11 +80,16 @@ jobs:
       - name: Download and Unzip SDK
         run: |
           cd "$CACHE_DIR_SDK"
-          if ! ( wget -q -O - "$SDK_URL_PATH/sha256sums" | grep -- "$SDK_NAME" > sha256sums.small 2>/dev/null ) ; then
+          SDK_URL_PATH="$(echo "$SDK_URL_PATH" | xargs)"
+          SDK_NAME="$(echo "$SDK_NAME" | xargs)"
+          wget -q -O sha256sums.all "$SDK_URL_PATH/sha256sums"
+          if ! grep -- "$SDK_NAME" sha256sums.all | head -n 1 > sha256sums.small 2>/dev/null ; then
             echo "::error::Can not find ${SDK_NAME} file in sha256sums."
+            echo "SDK candidates in sha256sums:"
+            grep -E 'openwrt-sdk|openwrt-imagebuilder|openwrt-toolchain' sha256sums.all | head -n 20 || true
             exit 1
           fi
-          SDK_FILE="$(cat sha256sums.small | cut -d' ' -f2 | sed 's/*//g')"
+          SDK_FILE="$(cat sha256sums.small | cut -d' ' -f2 | sed 's/*//g' | head -n 1)"
           if ! sha256sum -c ./sha256sums.small >/dev/null 2>&1 ; then
             wget -q -O "$SDK_FILE" "$SDK_URL_PATH/$SDK_FILE"
             if ! sha256sum -c ./sha256sums.small >/dev/null 2>&1 ; then
@@ -221,11 +226,16 @@ jobs:
       - name: Download and Unzip SDK
         run: |
           cd "$CACHE_DIR_SDK"
-          if ! ( wget -q -O - "$SDK_URL_PATH/sha256sums" | grep -- "$SDK_NAME" > sha256sums.small 2>/dev/null ) ; then
+          SDK_URL_PATH="$(echo "$SDK_URL_PATH" | xargs)"
+          SDK_NAME="$(echo "$SDK_NAME" | xargs)"
+          wget -q -O sha256sums.all "$SDK_URL_PATH/sha256sums"
+          if ! grep -- "$SDK_NAME" sha256sums.all | head -n 1 > sha256sums.small 2>/dev/null ; then
             echo "::error::Can not find ${SDK_NAME} file in sha256sums at ${SDK_URL_PATH}."
+            echo "SDK candidates in sha256sums:"
+            grep -E 'openwrt-sdk|openwrt-imagebuilder|openwrt-toolchain' sha256sums.all | head -n 20 || true
             exit 1
           fi
-          SDK_FILE="$(cat sha256sums.small | cut -d' ' -f2 | sed 's/*//g')"
+          SDK_FILE="$(cat sha256sums.small | cut -d' ' -f2 | sed 's/*//g' | head -n 1)"
           if ! sha256sum -c ./sha256sums.small >/dev/null 2>&1 ; then
             wget -q -O "$SDK_FILE" "$SDK_URL_PATH/$SDK_FILE"
             if ! sha256sum -c ./sha256sums.small >/dev/null 2>&1 ; then
