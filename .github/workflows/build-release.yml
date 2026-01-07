@@ -136,12 +136,28 @@ jobs:
           CONFIG_PACKAGE_luci-app-xray=m
           CONFIG_PACKAGE_luci-app-xray-geodata=m
           CONFIG_PACKAGE_luci-app-xray-status=m
+          CONFIG_PACKAGE_ipk=y
+          # CONFIG_PACKAGE_apk is not set
+          CONFIG_PACKAGE_FORMAT_IPK=y
+          # CONFIG_PACKAGE_FORMAT_APK is not set
+          # CONFIG_USE_APK is not set
           EOF
           make defconfig
+          echo "Package format config:"
+          grep -E '^(CONFIG_PACKAGE_(ipk|apk)|CONFIG_PACKAGE_FORMAT_(IPK|APK)|CONFIG_USE_APK)=' .config || true
+          grep -E '^# CONFIG_(PACKAGE_apk|PACKAGE_FORMAT_APK|USE_APK) is not set' .config || true
           make package/luci-app-xray/{clean,compile} V=s
           make package/luci-app-xray-geodata/{clean,compile} V=s
           make package/luci-app-xray-status/{clean,compile} V=s
-          find "$SDK_HOME/bin/" -type f -name "*.ipk" -exec ls -lh {} \;
+          echo "Xray package archives in SDK output:"
+          find "$SDK_HOME/bin/" -type f \( \
+            -name "luci-app-xray*.ipk" -o \
+            -name "luci-app-xray*.apk" -o \
+            -name "luci-app-xray-geodata*.ipk" -o \
+            -name "luci-app-xray-geodata*.apk" -o \
+            -name "luci-app-xray-status*.ipk" -o \
+            -name "luci-app-xray-status*.apk" \
+          \) -exec ls -lh {} \;
           cd -
       - name: Copy Bin Files
         run: |
@@ -261,30 +277,54 @@ jobs:
           CONFIG_PACKAGE_luci-app-xray=m
           CONFIG_PACKAGE_luci-app-xray-geodata=m
           CONFIG_PACKAGE_luci-app-xray-status=m
+          CONFIG_PACKAGE_ipk=y
+          # CONFIG_PACKAGE_apk is not set
+          CONFIG_PACKAGE_FORMAT_IPK=y
+          # CONFIG_PACKAGE_FORMAT_APK is not set
+          # CONFIG_USE_APK is not set
           EOF
           make defconfig
+          echo "Package format config:"
+          grep -E '^(CONFIG_PACKAGE_(ipk|apk)|CONFIG_PACKAGE_FORMAT_(IPK|APK)|CONFIG_USE_APK)=' .config || true
+          grep -E '^# CONFIG_(PACKAGE_apk|PACKAGE_FORMAT_APK|USE_APK) is not set' .config || true
           make package/luci-app-xray/{clean,compile} V=s
           make package/luci-app-xray-geodata/{clean,compile} V=s
           make package/luci-app-xray-status/{clean,compile} V=s
-          find "$SDK_HOME/bin/" -type f -name "*.ipk" -exec ls -lh {} \;
+          echo "Xray package archives in SDK output:"
+          find "$SDK_HOME/bin/" -type f \( \
+            -name "luci-app-xray*.ipk" -o \
+            -name "luci-app-xray*.apk" -o \
+            -name "luci-app-xray-geodata*.ipk" -o \
+            -name "luci-app-xray-geodata*.apk" -o \
+            -name "luci-app-xray-status*.ipk" -o \
+            -name "luci-app-xray-status*.apk" \
+          \) -exec ls -lh {} \;
           cd -
       - name: Copy Bin Files
         run: |
-          mkdir -p "${{ github.workspace }}/ipk"
+          mkdir -p "${{ github.workspace }}/pkg"
           find "$SDK_HOME/bin/" -type f \( \
             -name "luci-app-xray*.ipk" -o \
+            -name "luci-app-xray*.apk" -o \
             -name "luci-app-xray-geodata*.ipk" -o \
+            -name "luci-app-xray-geodata*.apk" -o \
             -name "luci-app-xray-status*.ipk" \
-          \) -exec cp {} "${{ github.workspace }}/ipk" \;
-          echo "IPKs in SDK output:"
-          find "$SDK_HOME/bin/" -type f -name "*.ipk" -exec ls -lh {} \;
-          echo "IPKs to upload:"
-          find "${{ github.workspace }}/ipk" -type f -name "*.ipk" -exec ls -lh {} \;
+            -o -name "luci-app-xray-status*.apk" \
+          \) -exec cp {} "${{ github.workspace }}/pkg" \;
+          echo "Xray package archives to upload:"
+          find "${{ github.workspace }}/pkg" -type f -maxdepth 1 -exec ls -lh {} \;
+      - name: Verify IPK Output
+        run: |
+          if ! ls -1 "${{ github.workspace }}/pkg/"*.ipk >/dev/null 2>&1 ; then
+            echo "::error::No .ipk files were produced. This SDK likely outputs .apk packages; use the 23.05.5 release SDK URL if your router uses opkg."
+            exit 1
+          fi
       - name: Upload Artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PACKAGE_NAME }}-${{ inputs.arch_label }}-ipk
-          path: "ipk/*.ipk"
+          path: "pkg/*"
 
   notify:
     name: Notify Release Publish
