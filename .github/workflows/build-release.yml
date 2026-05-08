@@ -161,7 +161,11 @@ jobs:
             -name "luci-app-xray-geodata*.ipk" -o \
             -name "luci-app-xray-geodata*.apk" -o \
             -name "luci-app-xray-status*.ipk" -o \
-            -name "luci-app-xray-status*.apk" \
+            -name "luci-app-xray-status*.apk" -o \
+            -name "xray-core*.ipk" -o \
+            -name "xray-core*.apk" -o \
+            -name "xray-geodata*.ipk" -o \
+            -name "xray-geodata*.apk" \
           \) -exec ls -lh {} \;
           cd -
       - name: Copy Bin Files
@@ -320,6 +324,10 @@ jobs:
             -name "luci-app-xray-geodata*.apk" -o \
             -name "luci-app-xray-status*.ipk" \
             -o -name "luci-app-xray-status*.apk" \
+            -o -name "xray-core*.ipk" \
+            -o -name "xray-core*.apk" \
+            -o -name "xray-geodata*.ipk" \
+            -o -name "xray-geodata*.apk" \
           \) -exec cp {} "${{ github.workspace }}/pkg" \;
           echo "Xray package archives to upload:"
           find "${{ github.workspace }}/pkg" -type f -maxdepth 1 -exec ls -lh {} \;
